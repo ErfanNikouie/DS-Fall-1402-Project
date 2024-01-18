@@ -1,5 +1,5 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
 
 public class FamilyTree
 {
@@ -41,6 +41,7 @@ public class FamilyTree
 	public Family LookupFamily(FamilyID family) => families.Lookup(family);
 
 	#endregion
+	
 
 	private void AddFamiliesInvolvedAsChild(PersonID person, FamilyID family)
 	{
@@ -50,6 +51,7 @@ public class FamilyTree
 		familiesInvolvedDict[person.Value].ChildOf = family;
 	}
 	
+
 	private void AddFamiliesInvolvedAsOwner(PersonID person, FamilyID family)
 	{
 		if (!familiesInvolvedDict.ContainsKey(person.Value))
@@ -57,8 +59,92 @@ public class FamilyTree
 
 		familiesInvolvedDict[person.Value].OwnerOf = family;
 	}
+	
+
+	private void BFSBackwardsTrace(PersonID first, Action<FamilyID> onTraced) //Child to each parent
+	{
+		Queue<FamilyID> trace = new Queue<FamilyID>();
+
+		trace.Enqueue(familiesInvolvedDict[first.Value].ChildOf);
+
+		FamilyID fid = new FamilyID(-1);
+		FamilyID fatherFamily = new FamilyID(-1);
+		FamilyID motherFamily = new FamilyID(-1);
+		
+		while (trace.Count > 0)
+		{
+			fid = trace.Dequeue();
+			onTraced?.Invoke(fid);
+
+			fatherFamily = familiesInvolvedDict[families.Lookup(fid).Father.Value].ChildOf;
+			motherFamily = familiesInvolvedDict[families.Lookup(fid).Mother.Value].ChildOf;
+			
+			if(fatherFamily.Value != -1)
+				trace.Enqueue(fatherFamily);
+			if(motherFamily.Value != -1)
+				trace.Enqueue(motherFamily);
+		}
+	}
+	
+
+	private void FastDoubleBackwardsTrace(PersonID first, PersonID second, Action<FamilyID> onMet)
+	{
+		Queue<FamilyID> firstTrace = new Queue<FamilyID>();
+		List<FamilyID> firstMarked = new List<FamilyID>();
+		Queue<FamilyID> secondTrace = new Queue<FamilyID>();
+		List<FamilyID> secondMarked = new List<FamilyID>();
+		
+		firstTrace.Enqueue(familiesInvolvedDict[first.Value].ChildOf);
+		secondTrace.Enqueue(familiesInvolvedDict[second.Value].ChildOf);
+		
+		FamilyID fid = new FamilyID(-1);
+		FamilyID fatherFamily = new FamilyID(-1);
+		FamilyID motherFamily = new FamilyID(-1);
+
+		while (firstTrace.Count != 0 || secondTrace.Count != 0)
+		{
+			if (firstTrace.Count > 0)
+			{
+				fid = firstTrace.Dequeue();
+				firstMarked.Add(fid);
+
+				fatherFamily = familiesInvolvedDict[families.Lookup(fid).Father.Value].ChildOf;
+				motherFamily = familiesInvolvedDict[families.Lookup(fid).Mother.Value].ChildOf;
+				
+				if(fatherFamily.Value != -1)
+					firstTrace.Enqueue(fatherFamily);
+				if(motherFamily.Value != -1)
+					firstTrace.Enqueue(motherFamily);
+			}
+
+			if (secondTrace.Count > 0)
+			{
+				fid = secondTrace.Dequeue();
+				secondMarked.Add(fid);
+
+				fatherFamily = familiesInvolvedDict[families.Lookup(fid).Father.Value].ChildOf;
+				motherFamily = familiesInvolvedDict[families.Lookup(fid).Mother.Value].ChildOf;
+
+				if (fatherFamily.Value != -1)
+					secondTrace.Enqueue(fatherFamily);
+				if (motherFamily.Value != -1)
+					secondTrace.Enqueue(motherFamily);
+			}
+			
+
+			foreach (FamilyID fmark in firstMarked)
+				foreach (FamilyID smark in secondMarked)
+					if (fmark.Equals(smark))
+					{
+						onMet?.Invoke(fmark);
+						return;
+					}
+		}
+	}
+	
 
 	public void AddPerson(Person person) => people.Add(person);
+	
 
 	public void AddFamily(Family family)
 	{
@@ -90,6 +176,7 @@ public class FamilyTree
 		
 		return CheckParentRelation(parent, parentFamily.Father) || CheckParentRelation(parent, parentFamily.Mother);
 	}
+	
 
 	public bool CheckSiblingRelation(PersonID first, PersonID second) // if 'first' is a sibling of 'second'
 	{
@@ -103,14 +190,48 @@ public class FamilyTree
 
 		return firstFamily.Equals(secondFamily);
 	}
+	
 
-	public bool CheckDistantRelation(PersonID first, PersonID second)
+	public bool CheckDistantRelationBFS(PersonID first, PersonID second) => GetCommonFamiliesBFS(first, second)?.Count > 0;
+
+	public bool CheckDistantRelationFast(PersonID first, PersonID second) => GetCommonFamilyFast(first, second).Value != -1;
+	
+	public List<FamilyID> GetCommonFamiliesBFS(PersonID first, PersonID second)
 	{
-		if (!people.ValidateID(first) || !people.ValidateID(second)) return false;
+		if (!people.ValidateID(first) || !people.ValidateID(second)) return null;
+		if (!familiesInvolvedDict.ContainsKey(first.Value) || !familiesInvolvedDict.ContainsKey(second.Value)) return null;
+		if (familiesInvolvedDict[first.Value].ChildOf.Value == -1 || familiesInvolvedDict[second.Value].ChildOf.Value == -1) return null;
+
+		List<FamilyID> commonFamilies = new List<FamilyID>();
+		List<FamilyID> firstFamilies = new List<FamilyID>();
+
+		BFSBackwardsTrace(first, id => firstFamilies.Add(id)); //Mark first parent families
+		BFSBackwardsTrace(second, //Filter out the common families
+			id => 
+			{ 
+				foreach (FamilyID f in firstFamilies)
+				{
+					if (f.Value != id.Value) continue;
+					
+					commonFamilies.Add(id);
+					firstFamilies.Remove(f);
+					break;
+				}
+			});
+
+		return commonFamilies;
+	}
+	
+	public FamilyID GetCommonFamilyFast(PersonID first, PersonID second)
+	{
+		FamilyID result = new FamilyID(-1);
 		
-		var firstFamily = familiesInvolvedDict[first.Value].ChildOf;
-		var secondFamily = familiesInvolvedDict[second.Value].ChildOf;
+		if (!people.ValidateID(first) || !people.ValidateID(second)) return result;
+		if (!familiesInvolvedDict.ContainsKey(first.Value) || !familiesInvolvedDict.ContainsKey(second.Value)) return result;
+		if (familiesInvolvedDict[first.Value].ChildOf.Value == -1 || familiesInvolvedDict[second.Value].ChildOf.Value == -1) return result;
+
 		
-		return firstFamily.Equals(secondFamily);
+		FastDoubleBackwardsTrace(first, second, id => result = id);
+		return result;
 	}
 }

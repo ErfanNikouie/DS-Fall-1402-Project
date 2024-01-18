@@ -7,4 +7,5 @@ public struct FamilyID : IID
     public int Value => value;
 
     public FamilyID(int value) => this.value = value;
+    public bool Equals(IID id) => Value == id.Value;
 }
