@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Codice.Client.BaseCommands.TubeClient;
 
 [Serializable]
 public class Family
@@ -23,5 +24,17 @@ public class Family
         if (children.Contains(person)) return;
         
         children.Add(person);
+    }
+
+    public bool IsEqual(Family family)
+    {
+        if (!father.Equals(family.father) || !mother.Equals(family.mother) || children.Count != family.Children.Count)
+            return false;
+        
+        for (int i = 0; i < children.Count; i++)
+            if (!children[i].Equals(family.Children[i]))
+                return false;
+
+        return true;
     }
 }
