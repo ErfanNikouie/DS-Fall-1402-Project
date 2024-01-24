@@ -453,4 +453,132 @@ public class FamilyTreeTests
         Assert.IsTrue(isChildFatherBrotherSon2ADistantRelativeOfChildFatherBrotherSon);
         Assert.IsFalse(isChildChildADistantRelativeOfPerson);
     }
+
+    [Test]
+    public void FamilyTree_GetFarthestBorn_MultiLayer_Test()
+    {
+        //Arrange
+        FamilyTree ft = new FamilyTree();
+        
+        Person father = new Person("Father");
+        PersonID fatherid = (PersonID) ft.People.GenerateUniqueID(); //fatherid: 0
+        ft.AddPerson(father);
+        Person mother = new Person("Mother");
+        PersonID motherid = (PersonID) ft.People.GenerateUniqueID(); //fatherid: 1
+        ft.AddPerson(mother);
+        
+        Family f = new Family(fatherid, motherid);
+        FamilyID fid = (FamilyID) ft.Families.GenerateUniqueID(); //familyid: 0
+        ft.AddFamily(f);
+
+        Person childFather = new Person("ChildFather");
+        PersonID childFatherid = (PersonID)ft.People.GenerateUniqueID(); //childFatherid: 2
+        ft.AddPerson(childFather);
+        ft.AddChildToFamily(childFatherid, fid);
+        
+        Person childMother = new Person("ChildMother");
+        PersonID childMotherid = (PersonID)ft.People.GenerateUniqueID(); //childMotherid: 3
+        ft.AddPerson(childMother);
+
+        Family childf = new Family(childFatherid, childMotherid);
+        FamilyID childfid = (FamilyID) ft.Families.GenerateUniqueID(); //childfid: 1
+        ft.AddFamily(childf);
+        
+        Person childChild = new Person("ChildChild");
+        PersonID childChildid = (PersonID) ft.People.GenerateUniqueID(); //childChildid: 4
+        ft.AddPerson(childChild);
+        ft.AddChildToFamily(childChildid, childfid);
+        
+        //Act
+        PersonID farthestBornOfFather = ft.GetFarthestBorn(fatherid, out int fatherdist);
+        PersonID farthestBornOfMother = ft.GetFarthestBorn(motherid, out int motherdist);
+        PersonID farthestBornOfChildFather = ft.GetFarthestBorn(childFatherid, out int childfdist);
+        PersonID farthestBornOfChildMother = ft.GetFarthestBorn(childMotherid, out int childmdist);
+        PersonID farthestBornOfChildChild = ft.GetFarthestBorn(childChildid, out int childcdist);
+        
+        //Assert
+        Assert.AreEqual(4, farthestBornOfFather.Value);
+        Assert.AreEqual(4, farthestBornOfMother.Value);
+        Assert.AreEqual(4, farthestBornOfChildFather.Value);
+        Assert.AreEqual(4, farthestBornOfChildMother.Value);
+        Assert.AreEqual(4, farthestBornOfChildChild.Value);
+        
+        Assert.AreEqual(2, fatherdist);
+        Assert.AreEqual(2, motherdist);
+        Assert.AreEqual(1, childfdist);
+        Assert.AreEqual(1, childmdist);
+        Assert.AreEqual(0, childcdist);
+    }
+    
+    [Test]
+    public void FamilyTree_GetFarthestRelation_MultiLayer_Test()
+    {
+        //Arrange
+        FamilyTree ft = new FamilyTree();
+
+        Person father = new Person("Father");
+        PersonID fatherid = (PersonID)ft.People.GenerateUniqueID();
+        ft.AddPerson(father);
+        Person mother = new Person("Mother");
+        PersonID motherid = (PersonID)ft.People.GenerateUniqueID();
+        ft.AddPerson(mother);
+
+        Family f = new Family(fatherid, motherid);
+        FamilyID fid = (FamilyID)ft.Families.GenerateUniqueID();
+        ft.AddFamily(f);
+
+        Person childFather = new Person("ChildFather");
+        PersonID childFatherid = (PersonID)ft.People.GenerateUniqueID();
+        ft.AddPerson(childFather);
+        ft.AddChildToFamily(childFatherid, fid);
+
+        Person childMother = new Person("ChildMother");
+        PersonID childMotherid = (PersonID)ft.People.GenerateUniqueID();
+        ft.AddPerson(childMother);
+
+        Family childf = new Family(childFatherid, childMotherid);
+        FamilyID childfid = (FamilyID)ft.Families.GenerateUniqueID();
+        ft.AddFamily(childf);
+
+        Person childChild = new Person("ChildChild");
+        PersonID childChildid = (PersonID)ft.People.GenerateUniqueID();
+        ft.AddPerson(childChild);
+        ft.AddChildToFamily(childChildid, childfid);
+        
+        Person childFatherBrother = new Person("ChildFatherBrother");
+        PersonID childFatherBrotherid = (PersonID)ft.People.GenerateUniqueID();
+        ft.AddPerson(childFatherBrother);
+        ft.AddChildToFamily(childFatherBrotherid, fid);
+        
+        Person childFatherBrotherWife = new Person("ChildFatherBrotherWife");
+        PersonID childFatherBrotherWifeid = (PersonID)ft.People.GenerateUniqueID();
+        ft.AddPerson(childFatherBrotherWife);
+        
+        Family childFatherBrotherf = new Family(childFatherBrotherid, childFatherBrotherWifeid);
+        FamilyID childFatherBrotherfid = (FamilyID)ft.Families.GenerateUniqueID();
+        ft.AddFamily(childFatherBrotherf);
+        
+        Person childFatherBrotherSon = new Person("ChildFatherBrotherSon");
+        PersonID childFatherBrotherSonid = (PersonID)ft.People.GenerateUniqueID();
+        ft.AddPerson(childFatherBrotherSon);
+        ft.AddChildToFamily(childFatherBrotherSonid, childFatherBrotherfid);
+        
+        Person childFatherBrotherSon2 = new Person("ChildFatherBrotherSon2");
+        PersonID childFatherBrotherSon2id = (PersonID)ft.People.GenerateUniqueID();
+        ft.AddPerson(childFatherBrotherSon2);
+        ft.AddChildToFamily(childFatherBrotherSon2id, childFatherBrotherfid);
+        
+        //Act
+        ft.GetFarthestRelation(fatherid, out PersonID ffirst, out PersonID fsecond, out int fdist);
+        ft.GetFarthestRelation(motherid, out PersonID mfirst, out PersonID msecond, out int mdist);
+        
+        //Assert
+        Assert.AreEqual(4, ffirst.Value);
+        Assert.AreEqual(7, fsecond.Value);
+        Assert.AreEqual(4, mfirst.Value);
+        Assert.AreEqual(7, msecond.Value);
+        
+        Assert.AreEqual(3, fdist);
+        Assert.AreEqual(3, mdist);
+    }
 }
