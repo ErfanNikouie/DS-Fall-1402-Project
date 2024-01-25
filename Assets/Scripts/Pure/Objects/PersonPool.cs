@@ -7,11 +7,12 @@ public class PersonPool : IPool<Person>
     private List<Person> pool = new List<Person>();
     public List<Person> Pool => pool;
     
-    public void Add(Person value)
+    public bool Add(Person value)
     {
-        if (Pool.Contains(value)) return;
+        if (Pool.Contains(value)) return false;
         
         Pool.Add(value);
+        return true;
     }
 	
     public bool ValidateID(IID id) => id.Value < Pool.Count && id.Value >= 0;

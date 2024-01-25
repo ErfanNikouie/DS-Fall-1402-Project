@@ -7,11 +7,12 @@ public class FamilyPool : IPool<Family>
     private List<Family> pool = new List<Family>();
     public List<Family> Pool => pool;
     
-    public void Add(Family value)
+    public bool Add(Family value)
     {
-        if (Pool.Contains(value)) return;
+        if (Pool.Contains(value)) return false;
         
         Pool.Add(value);
+        return true;
     }
 	
     public bool ValidateID(IID id) => id.Value < Pool.Count && id.Value >= 0;
