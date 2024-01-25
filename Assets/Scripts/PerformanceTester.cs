@@ -10,7 +10,7 @@ public class PerformanceTester : MonoBehaviour
         Stopwatch stopwatch = new Stopwatch();
 
         stopwatch.Start();
-//        BFSTest();
+//      BFSTest();
         stopwatch.Stop();
         
         TimeSpan timeTaken = stopwatch.Elapsed;
@@ -18,7 +18,7 @@ public class PerformanceTester : MonoBehaviour
 
         stopwatch.Reset();
         stopwatch.Start();
-//        FastTest();
+//      FastTest();
         stopwatch.Stop();
         
         timeTaken = stopwatch.Elapsed;
