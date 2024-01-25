@@ -2,7 +2,9 @@ using UnityEngine;
 
 public class FamilyTreeView : MonoBehaviour
 {
-    private FamilyTreeController controller;
+    private FamilyTreeController controller = null;
+
+    [SerializeField] private GameObject nodePrefab = null;
 
     private void Awake()
     {
@@ -11,6 +13,9 @@ public class FamilyTreeView : MonoBehaviour
         controller.RegisterAddPersonListener(Refresh);
         controller.RegisterAddFamilyListener(Refresh);
         controller.RegisterAddChildListener(Refresh);
+        
+        if(nodePrefab == null)
+            Debug.LogError("Node prefab is not set.");
     }
     
     private void Refresh()
