@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 public class FamilyTreeModel
@@ -7,8 +8,9 @@ public class FamilyTreeModel
 
 	private Dictionary<int, FamiliesInvolved> familiesInvolvedDict = new Dictionary<int, FamiliesInvolved>();
 
-	public PersonPool People => people;
-	public FamilyPool Families => families;
+	public Action OnPersonAdded;
+	public Action OnFamilyAdded;
+	public Action OnChildAdded;
 
 	public int PeopleCount => people.Pool.Count;
 	public int FamilyCount => families.Pool.Count;
@@ -58,7 +60,7 @@ public class FamilyTreeModel
 	
 	#endregion
 	
-	public void AddFamiliesInvolvedAsChild(PersonID person, FamilyID family)
+	private void AddFamiliesInvolvedAsChild(PersonID person, FamilyID family)
 	{
 		if (!familiesInvolvedDict.ContainsKey(person.Value))
 			familiesInvolvedDict[person.Value] = new FamiliesInvolved();
@@ -66,7 +68,7 @@ public class FamilyTreeModel
 		familiesInvolvedDict[person.Value].ChildOf = family;
 	}
 	
-	public void AddFamiliesInvolvedAsOwner(PersonID person, FamilyID family)
+	private void AddFamiliesInvolvedAsOwner(PersonID person, FamilyID family)
 	{
 		if (!familiesInvolvedDict.ContainsKey(person.Value))
 			familiesInvolvedDict[person.Value] = new FamiliesInvolved();
@@ -74,24 +76,38 @@ public class FamilyTreeModel
 		familiesInvolvedDict[person.Value].OwnerOf = family;
 	}
 
-	public bool AddPerson(Person person) => people.Add(person);
+	public bool AddPerson(Person person)
+	{
+		if (!people.Add(person)) return false;
+
+		OnPersonAdded?.Invoke();
+		return true;
+	}
 
 	public bool AddFamily(Family family)
 	{
 		if (!ValidatePersonID(family.Father) || !ValidatePersonID(family.Mother)) return false;
 
-		FamilyID fid = GetUniqueFamilyID();
+
+		if (!families.Add(family)) return false;
 		
+		FamilyID fid = GetUniqueFamilyID();
 		AddFamiliesInvolvedAsOwner(family.Father, fid);
 		AddFamiliesInvolvedAsOwner(family.Mother, fid);
-		return families.Add(family);
+		
+		OnFamilyAdded?.Invoke();
+		return true;
 	}
 	
 	public bool AddChildToFamily(PersonID child, FamilyID family)
 	{
 		if (!ValidatePersonID(child) || !ValidateFamilyID(family)) return false;
 		
+		if(!LookupFamily(family).AddChild(child)) return false;
+		
 		AddFamiliesInvolvedAsChild(child, family);
-		return LookupFamily(family).AddChild(child);
+
+		OnChildAdded?.Invoke();
+		return true;
 	}
 }

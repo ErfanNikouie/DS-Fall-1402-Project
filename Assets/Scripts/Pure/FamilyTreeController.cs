@@ -29,6 +29,14 @@ public class FamilyTreeController
     
     #endregion
 
+    #region Events
+
+    public void RegisterAddPersonListener(Action onPersonAdded) => model.OnPersonAdded += onPersonAdded;
+    public void RegisterAddFamilyListener(Action onFamilyAdded) => model.OnFamilyAdded += onFamilyAdded;
+    public void RegisterAddChildListener(Action onChildAdded) => model.OnChildAdded += onChildAdded;
+    
+    #endregion
+    
     #region Internal
     
     private void BFSBackwardsTrace(PersonID first, Action<FamilyID> onTraced) //Child to each parent
