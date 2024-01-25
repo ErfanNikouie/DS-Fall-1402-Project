@@ -1,14 +1,16 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class FamilyTreeView : MonoBehaviour
 {
     private FamilyTreeController controller = new FamilyTreeController();
     public FamilyTreeController Controller => controller;
 
+    [Header("Nodes")]
     [SerializeField] private GameObject nodePrefab = null;
-    
+
     [Serializable]
     public struct NodeParameters
     {
@@ -20,20 +22,31 @@ public class FamilyTreeView : MonoBehaviour
 
     [SerializeField] private NodeParameters nodeParams;
     public NodeParameters NodeParams => nodeParams;
-    
-    private Dictionary<int, FamilyTreeNode> nodes = new Dictionary<int, FamilyTreeNode>(); 
+
+    [Header("Links")]
+    [SerializeField] private GameObject linkPrefab = null;
+
+    [SerializeField] private Material[] materials;
+    private Material RandomMaterial => materials[Random.Range(0, materials.Length)];
+
+    private Dictionary<int, FamilyTreeNode> nodes = new Dictionary<int, FamilyTreeNode>();
     private Dictionary<int, Vector2> positions = new Dictionary<int, Vector2>();
+    private Dictionary<int, FamilyTreeLink> links = new Dictionary<int, FamilyTreeLink>();
 
     private List<int> deactiveNodes = new List<int>();
+    private List<int> deactiveLinks = new List<int>();
 
     private void Awake()
     {
         controller.RegisterAddPersonListener(CreateNode);
         controller.RegisterAddPersonListener(i => Refresh());
-        controller.RegisterAddFamilyListener(i => Refresh());
-        controller.RegisterAddChildListener((i, j) => Refresh());
         
-        if(nodePrefab == null)
+        controller.RegisterAddFamilyListener(CreateFamily);
+        controller.RegisterAddFamilyListener(i => Refresh());
+        
+        controller.RegisterAddChildListener((i, j) => Refresh());
+
+        if (nodePrefab == null)
             Debug.LogError("Node prefab is not set.");
     }
 
@@ -43,10 +56,19 @@ public class FamilyTreeView : MonoBehaviour
         node.Initialize(id);
         nodes.TryAdd(id, node);
     }
-    
+
+    private void CreateFamily(int id)
+    {
+        FamilyTreeLink link = Instantiate(linkPrefab, Vector3.zero, Quaternion.identity).GetComponent<FamilyTreeLink>();
+
+        link.Initialize(RandomMaterial);
+        links.TryAdd(id, link);
+    }
+
     private void Refresh()
     {
         PlaceNodes();
+        LinkNodes();
     }
 
     private void PlaceNodes()
@@ -54,10 +76,10 @@ public class FamilyTreeView : MonoBehaviour
         PersonPool people = controller.People;
         positions.Clear();
         ResetDeactiveNodes();
-        
+
         for (int i = 0; i < people.Pool.Count; i++)
             CalculateNodePosition(i);
-        
+
         for (int i = 0; i < people.Pool.Count; i++)
         {
             if (!positions.ContainsKey(i))
@@ -66,8 +88,28 @@ public class FamilyTreeView : MonoBehaviour
                 nodes[i].gameObject.SetActive(false);
                 continue;
             }
-            
+
             nodes[i].transform.position = positions[i];
+        }
+    }
+
+    private void LinkNodes()
+    {
+        FamilyPool families = controller.Families;
+        //ResetDeactiveLinks();
+
+        for (int i = 0; i < families.Pool.Count; i++)
+        {
+            Family f = families.Pool[i];
+
+            Vector2 father = positions[f.Father.Value];
+            Vector2 mother = positions[f.Mother.Value];
+            Vector2[] children = new Vector2[f.Children.Count];
+
+            for (int j = 0; j < f.Children.Count; j++)
+                children[j] = positions[f.Children[j].Value];
+            
+            links[i].SetPoints(father, mother, children);
         }
     }
 
@@ -75,8 +117,16 @@ public class FamilyTreeView : MonoBehaviour
     {
         foreach (int id in deactiveNodes)
             nodes[id].gameObject.SetActive(true);
-        
+
         deactiveNodes.Clear();
+    }
+    
+    private void ResetDeactiveLinks()
+    {
+        foreach (int id in deactiveLinks)
+            links[id].gameObject.SetActive(true);
+
+        deactiveLinks.Clear();
     }
 
     private int FindIndexInList(int id, in List<PersonID> ids)
@@ -92,7 +142,7 @@ public class FamilyTreeView : MonoBehaviour
     {
         if (positions.ContainsKey(id)) return;
         if (!controller.TryGetFamiliesInvolved(id, out var families)) return;
-        
+
         Family ownerOf = controller.LookupFamily(families.OwnerOf);
         Family childOf = controller.LookupFamily(families.ChildOf);
 
@@ -133,8 +183,8 @@ public class FamilyTreeView : MonoBehaviour
                     float childOffset = i * nodeParams.childDistance.x;
                     float childOffsetNormal = childOffset - (children.Count - 1) * 0.5f * nodeParams.childDistance.x;
                     childOffsetNormal += 0.5f * nodeParams.spouseDistance.x;
-                    
-                    
+
+
                     if (i != -1)
                         positions[id] = fPos + new Vector2(childOffsetNormal,
                             nodeParams.childDistance.y * nodeParams.childDirection);
@@ -144,11 +194,11 @@ public class FamilyTreeView : MonoBehaviour
                     controller.TryGetFamiliesInvolved(childOf.Mother, out var fFamilies);
                     var children = controller.LookupFamily(fFamilies.OwnerOf).Children;
                     int i = FindIndexInList(id, in children);
-                    
+
                     float childOffset = i * nodeParams.childDistance.x;
                     float childOffsetNormal = childOffset - (children.Count - 1) * 0.5f * nodeParams.childDistance.x;
                     childOffsetNormal += 0.5f * nodeParams.spouseDistance.x;
-                    
+
                     if (i != -1)
                         positions[id] = mPos + new Vector2(childOffsetNormal,
                             nodeParams.childDistance.y * nodeParams.childDirection);
@@ -163,14 +213,14 @@ public class FamilyTreeView : MonoBehaviour
             int otherParent = (ownerOf.Mother.Value == id) ? ownerOf.Father.Value : ownerOf.Mother.Value;
             CalculateNodePosition(otherParent);
         }
-        
+
         //Parents Second
         if (childOf != null)
         {
             CalculateNodePosition(childOf.Father.Value);
             CalculateNodePosition(childOf.Mother.Value);
         }
-        
+
         //Children Third
         if (ownerOf != null)
         {
