@@ -3,14 +3,6 @@ using NUnit.Framework;
 public class FamilyTreeTests
 {
     [Test]
-    public void FamilyTreeTestsSimplePasses()
-    {
-        //Arrange
-        //Act
-        //Assert
-    }
-
-    [Test]
     public void FamilyTree_Constructor_Test()
     {
         //Arrange & Act
@@ -436,14 +428,20 @@ public class FamilyTreeTests
         bool isChildFatherBrotherSon2ADistantRelativeOfChildFatherBrotherSon = false;
         bool isChildChildADistantRelativeOfPerson = true;
         
-        for (int i = 0; i < 200000; i++)
-        {
-            isChildChildADistantRelativeOfChildFatherBrother = ft.CheckDistantRelationFast(childChildid, childFatherBrotherid); // True
-            isChildFatherBrotherSonADistantRelativeOfChildChild = ft.CheckDistantRelationFast(childFatherBrotherSonid, childChildid); // True
-            isChildFatherBrotherSon2ADistantRelativeOfChildChild = ft.CheckDistantRelationFast(childFatherBrotherSon2id, childChildid); // True
-            isChildFatherBrotherSon2ADistantRelativeOfChildFatherBrotherSon = ft.CheckDistantRelationFast(childFatherBrotherSon2id, childFatherBrotherSonid); //True
-            isChildChildADistantRelativeOfPerson = ft.CheckDistantRelationFast(childChildid, personid); //False
-        }
+//        for (int i = 0; i < 200000; i++)
+//        {
+//            isChildChildADistantRelativeOfChildFatherBrother = ft.CheckDistantRelationFast(childChildid, childFatherBrotherid); // True
+//            isChildFatherBrotherSonADistantRelativeOfChildChild = ft.CheckDistantRelationFast(childFatherBrotherSonid, childChildid); // True
+//            isChildFatherBrotherSon2ADistantRelativeOfChildChild = ft.CheckDistantRelationFast(childFatherBrotherSon2id, childChildid); // True
+//            isChildFatherBrotherSon2ADistantRelativeOfChildFatherBrotherSon = ft.CheckDistantRelationFast(childFatherBrotherSon2id, childFatherBrotherSonid); //True
+//            isChildChildADistantRelativeOfPerson = ft.CheckDistantRelationFast(childChildid, personid); //False
+//        }
+        
+        isChildChildADistantRelativeOfChildFatherBrother = ft.CheckDistantRelationFast(childChildid, childFatherBrotherid); // True
+        isChildFatherBrotherSonADistantRelativeOfChildChild = ft.CheckDistantRelationFast(childFatherBrotherSonid, childChildid); // True
+        isChildFatherBrotherSon2ADistantRelativeOfChildChild = ft.CheckDistantRelationFast(childFatherBrotherSon2id, childChildid); // True
+        isChildFatherBrotherSon2ADistantRelativeOfChildFatherBrotherSon = ft.CheckDistantRelationFast(childFatherBrotherSon2id, childFatherBrotherSonid); //True
+        isChildChildADistantRelativeOfPerson = ft.CheckDistantRelationFast(childChildid, personid); //False
         
 
         //Assert

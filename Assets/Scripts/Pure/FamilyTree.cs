@@ -59,6 +59,8 @@ public class FamilyTree
 		familiesInvolvedDict[person.Value].OwnerOf = family;
 	}
 	
+	//.....
+	
 	private void BFSBackwardsTrace(PersonID first, Action<FamilyID> onTraced) //Child to each parent
 	{
 		Queue<FamilyID> trace = new Queue<FamilyID>();
@@ -255,10 +257,6 @@ public class FamilyTree
 		return firstFamily.Equals(secondFamily);
 	}
 	
-	public bool CheckDistantRelationBFS(PersonID first, PersonID second) => GetCommonFamiliesBFS(first, second)?.Count > 0;
-
-	public bool CheckDistantRelationFast(PersonID first, PersonID second) => GetCommonFamilyFast(first, second).Value != -1;
-	
 	public List<FamilyID> GetCommonFamiliesBFS(PersonID first, PersonID second)
 	{
 		if (!people.ValidateID(first) || !people.ValidateID(second)) return null;
@@ -295,6 +293,10 @@ public class FamilyTree
 		FastDoubleBackwardsTrace(first, second, id => result = id);
 		return result;
 	}
+	
+	public bool CheckDistantRelationBFS(PersonID first, PersonID second) => GetCommonFamiliesBFS(first, second)?.Count > 0;
+
+	public bool CheckDistantRelationFast(PersonID first, PersonID second) => GetCommonFamilyFast(first, second).Value != -1;
 
 	public PersonID GetFarthestBorn(PersonID person, out int distance)
 	{
@@ -370,68 +372,6 @@ public class FamilyTree
 					i = distanceToNodes[id.Value];
 					personID = id;
 				});
-
-			/*FamilyID fcid = familiesInvolvedDict[pid.Value].ChildOf;
-			if(fcid.Value == -1) continue;
-			
-			int currentDistance = distanceToNodes[pid.Value] + 1;
-			Family fc = families.Lookup(fcid);
-
-			if (!visitedNodes.Contains(fc.Father.Value))
-			{
-				trace.Enqueue(fc.Father);
-				distanceToNodes[fc.Father.Value] = currentDistance;
-			}
-			
-			if (!visitedNodes.Contains(fc.Mother.Value))
-			{
-				trace.Enqueue(fc.Mother);
-				distanceToNodes[fc.Mother.Value] = currentDistance;
-			}
-			
-			foreach (var child in fc.Children)
-			{
-				if(visitedNodes.Contains(child.Value) || child.Equals(pid)) continue;
-				
-				trace.Enqueue(child);
-				distanceToNodes[child.Value] = currentDistance;
-				
-				// Update the farthest person and distance
-				if (distanceToNodes[child.Value] <= distance) continue;
-				
-				distance = distanceToNodes[child.Value];
-				second = child;
-			}
-			
-			FamilyID foid = familiesInvolvedDict[pid.Value].OwnerOf;
-			if(foid.Value == -1) continue;
-			Family fo = families.Lookup(foid);
-			
-			if (!visitedNodes.Contains(fo.Father.Value))
-			{
-				trace.Enqueue(fo.Father);
-				distanceToNodes[fo.Father.Value] = currentDistance;
-			}
-			
-			if (!visitedNodes.Contains(fo.Mother.Value))
-			{
-				trace.Enqueue(fo.Mother);
-				distanceToNodes[fo.Mother.Value] = currentDistance;
-			}
-			
-			foreach (var child in fo.Children)
-			{
-				if(visitedNodes.Contains(child.Value) || child.Equals(pid)) continue;
-				
-				trace.Enqueue(child);
-				distanceToNodes[child.Value] = currentDistance;
-				
-				// Update the farthest person and distance
-				if (distanceToNodes[child.Value] <= distance) continue;
-				
-				distance = distanceToNodes[child.Value];
-				second = child;
-			}*/
 		}
 	}
 }

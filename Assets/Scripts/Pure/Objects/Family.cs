@@ -19,11 +19,12 @@ public class Family
         this.mother = mother;
     }
 
-    public void AddChild(PersonID person)
+    public bool AddChild(PersonID person)
     {
-        if (children.Contains(person)) return;
+        if (children.Contains(person)) return false;
         
         children.Add(person);
+        return true;
     }
 
     public bool IsEqual(Family family)
