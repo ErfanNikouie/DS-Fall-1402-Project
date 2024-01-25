@@ -18,7 +18,6 @@ public class FamilyTreeModel
 	public int PeopleCount => people.Pool.Count;
 	public int FamilyCount => families.Pool.Count;
 	
-	
 	#region Helper State Functions
 
 	public bool IsPeopleEmpty() => people?.Pool?.Count == 0;

@@ -12,9 +12,10 @@ public class FamilyTreeView : MonoBehaviour
     [Serializable]
     public struct NodeParameters
     {
-        public Vector2 distance;
-        public int spouseDirection; // right: +1, left: -1
-        public int childDirection; // up: +1, down: -1
+        public Vector2 childDistance;
+        public Vector2 spouseDistance;
+        [Range(-1, 1)] public int spouseDirection; // right: +1, left: -1
+        [Range(-1, 1)] public int childDirection; // up: +1, down: -1
     }
 
     [SerializeField] private NodeParameters nodeParams;
@@ -22,6 +23,8 @@ public class FamilyTreeView : MonoBehaviour
     
     private Dictionary<int, FamilyTreeNode> nodes = new Dictionary<int, FamilyTreeNode>(); 
     private Dictionary<int, Vector2> positions = new Dictionary<int, Vector2>();
+
+    private List<int> deactiveNodes = new List<int>();
 
     private void Awake()
     {
@@ -50,14 +53,30 @@ public class FamilyTreeView : MonoBehaviour
     {
         PersonPool people = controller.People;
         positions.Clear();
-
+        ResetDeactiveNodes();
+        
         for (int i = 0; i < people.Pool.Count; i++)
             CalculateNodePosition(i);
-
+        
         for (int i = 0; i < people.Pool.Count; i++)
         {
+            if (!positions.ContainsKey(i))
+            {
+                deactiveNodes.Add(i);
+                nodes[i].gameObject.SetActive(false);
+                continue;
+            }
+            
             nodes[i].transform.position = positions[i];
         }
+    }
+
+    private void ResetDeactiveNodes()
+    {
+        foreach (int id in deactiveNodes)
+            nodes[id].gameObject.SetActive(true);
+        
+        deactiveNodes.Clear();
     }
 
     private int FindIndexInList(int id, in List<PersonID> ids)
@@ -77,7 +96,7 @@ public class FamilyTreeView : MonoBehaviour
         Family ownerOf = controller.LookupFamily(families.OwnerOf);
         Family childOf = controller.LookupFamily(families.ChildOf);
 
-        if (positions.Count == 0 && (ownerOf != null || childOf != null))
+        if (positions.Count == 0)
             positions[id] = Vector2.zero;
         else
         {
@@ -87,7 +106,7 @@ public class FamilyTreeView : MonoBehaviour
                 int direction = (ownerOf.Mother.Value == id) ? -1 : 1;
 
                 if (positions.TryGetValue(otherParent, out var opPos))
-                    positions[id] = opPos + new Vector2(nodeParams.distance.x * nodeParams.spouseDirection * -direction, 0);
+                    positions[id] = opPos + new Vector2(nodeParams.spouseDistance.x * nodeParams.spouseDirection * -direction, 0);
                 else
                 {
                     int count = ownerOf.Children.Count;
@@ -96,8 +115,8 @@ public class FamilyTreeView : MonoBehaviour
                     {
                         if (!positions.TryGetValue(ownerOf.Children[i].Value, out Vector2 cPos)) continue;
 
-                        positions[id] = cPos + new Vector2(-(((i - 1) - 0.5f * (count - 1)) + 0.5f * direction) * nodeParams.distance.x,
-                            nodeParams.distance.y * -nodeParams.childDirection);
+                        positions[id] = cPos + new Vector2(-((i - 0.5f * (count - 1)) + 0.5f * direction) * nodeParams.childDistance.x,
+                            nodeParams.childDistance.y * nodeParams.childDirection);
                         break;
                     }
                 }
@@ -110,18 +129,29 @@ public class FamilyTreeView : MonoBehaviour
                     controller.TryGetFamiliesInvolved(childOf.Father, out var fFamilies);
                     var children = controller.LookupFamily(fFamilies.OwnerOf).Children;
                     int i = FindIndexInList(id, in children);
+
+                    float childOffset = i * nodeParams.childDistance.x;
+                    float childOffsetNormal = childOffset - (children.Count - 1) * 0.5f * nodeParams.childDistance.x;
+                    childOffsetNormal += 0.5f * nodeParams.spouseDistance.x;
+                    
+                    
                     if (i != -1)
-                        positions[id] = fPos + new Vector2(((i - 1) - 0.5f * (children.Count - 1)) * nodeParams.distance.x,
-                            nodeParams.distance.y * -nodeParams.childDirection);
+                        positions[id] = fPos + new Vector2(childOffsetNormal,
+                            nodeParams.childDistance.y * nodeParams.childDirection);
                 }
                 else if (positions.TryGetValue(childOf.Mother.Value, out var mPos))
                 {
                     controller.TryGetFamiliesInvolved(childOf.Mother, out var fFamilies);
                     var children = controller.LookupFamily(fFamilies.OwnerOf).Children;
                     int i = FindIndexInList(id, in children);
+                    
+                    float childOffset = i * nodeParams.childDistance.x;
+                    float childOffsetNormal = childOffset - (children.Count - 1) * 0.5f * nodeParams.childDistance.x;
+                    childOffsetNormal += 0.5f * nodeParams.spouseDistance.x;
+                    
                     if (i != -1)
-                        positions[id] = fPos + new Vector2(((i - 1) - 0.5f * (children.Count - 1)) * nodeParams.distance.x,
-                            nodeParams.distance.y * -nodeParams.childDirection);
+                        positions[id] = mPos + new Vector2(childOffsetNormal,
+                            nodeParams.childDistance.y * nodeParams.childDirection);
                 }
             }
         }
@@ -147,8 +177,5 @@ public class FamilyTreeView : MonoBehaviour
             foreach (PersonID child in ownerOf.Children)
                 CalculateNodePosition(child.Value);
         }
-
-        if (ownerOf == null && childOf == null)
-            Debug.LogError($"Person with ID: {id} doesn't have any connections to any other nodes.");
     }
 }

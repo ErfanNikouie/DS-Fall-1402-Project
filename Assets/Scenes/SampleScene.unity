@@ -334,6 +334,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nodePrefab: {fileID: 3344289670920045969, guid: 4e12c5984b2d60d4799169ed20987f13, type: 3}
+  nodeParams:
+    childDistance: {x: 4, y: 2}
+    spouseDistance: {x: 1, y: 0}
+    spouseDirection: 1
+    childDirection: -1
 --- !u!4 &1081289984
 Transform:
   m_ObjectHideFlags: 0
