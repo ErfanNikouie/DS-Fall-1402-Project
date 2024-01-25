@@ -10,6 +10,9 @@ public class FamilyTreeController
     // quick census
     public int PeopleCount => model.PeopleCount;
     public int FamilyCount => model.FamilyCount;
+
+    public PersonPool People => model.People;
+    public FamilyPool Families => model.Families;
     
     public bool IsPeopleEmpty() => model.IsPeopleEmpty();
     public bool IsFamiliesEmpty() => model.IsFamiliesEmpty();
@@ -27,13 +30,16 @@ public class FamilyTreeController
 
     public Family LookupFamily(FamilyID family) => model.LookupFamily(family);
     
+    public bool TryGetFamiliesInvolved(PersonID person, out FamiliesInvolved result) => model.TryGetFamiliesInvolved(person, out result);
+    public bool TryGetFamiliesInvolved(int person, out FamiliesInvolved result) => model.TryGetFamiliesInvolved(person, out result);
+    
     #endregion
 
     #region Events
 
-    public void RegisterAddPersonListener(Action onPersonAdded) => model.OnPersonAdded += onPersonAdded;
-    public void RegisterAddFamilyListener(Action onFamilyAdded) => model.OnFamilyAdded += onFamilyAdded;
-    public void RegisterAddChildListener(Action onChildAdded) => model.OnChildAdded += onChildAdded;
+    public void RegisterAddPersonListener(Action<int> onPersonAdded) => model.OnPersonAdded += onPersonAdded;
+    public void RegisterAddFamilyListener(Action<int> onFamilyAdded) => model.OnFamilyAdded += onFamilyAdded;
+    public void RegisterAddChildListener(Action<int, int> onChildAdded) => model.OnChildAdded += onChildAdded;
     
     #endregion
     

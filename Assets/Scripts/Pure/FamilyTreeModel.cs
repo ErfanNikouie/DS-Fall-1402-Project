@@ -8,9 +8,12 @@ public class FamilyTreeModel
 
 	private Dictionary<int, FamiliesInvolved> familiesInvolvedDict = new Dictionary<int, FamiliesInvolved>();
 
-	public Action OnPersonAdded;
-	public Action OnFamilyAdded;
-	public Action OnChildAdded;
+	public Action<int> OnPersonAdded;
+	public Action<int> OnFamilyAdded;
+	public Action<int, int> OnChildAdded;
+
+	public PersonPool People => people;
+	public FamilyPool Families => families;
 
 	public int PeopleCount => people.Pool.Count;
 	public int FamilyCount => families.Pool.Count;
@@ -49,6 +52,7 @@ public class FamilyTreeModel
 	public Family LookupFamily(FamilyID family) => families.Lookup(family);
 
 	public bool TryGetFamiliesInvolved(PersonID person, out FamiliesInvolved result) => familiesInvolvedDict.TryGetValue(person.Value, out result);
+	public bool TryGetFamiliesInvolved(int person, out FamiliesInvolved result) => familiesInvolvedDict.TryGetValue(person, out result);
 	
 	#endregion
 	
@@ -78,24 +82,24 @@ public class FamilyTreeModel
 
 	public bool AddPerson(Person person)
 	{
+		PersonID pid = GetUniquePersonID();
 		if (!people.Add(person)) return false;
 
-		OnPersonAdded?.Invoke();
+		OnPersonAdded?.Invoke(pid.Value);
 		return true;
 	}
 
 	public bool AddFamily(Family family)
 	{
 		if (!ValidatePersonID(family.Father) || !ValidatePersonID(family.Mother)) return false;
-
-
-		if (!families.Add(family)) return false;
 		
 		FamilyID fid = GetUniqueFamilyID();
+		if (!families.Add(family)) return false;
+		
 		AddFamiliesInvolvedAsOwner(family.Father, fid);
 		AddFamiliesInvolvedAsOwner(family.Mother, fid);
 		
-		OnFamilyAdded?.Invoke();
+		OnFamilyAdded?.Invoke(fid.Value);
 		return true;
 	}
 	
@@ -107,7 +111,7 @@ public class FamilyTreeModel
 		
 		AddFamiliesInvolvedAsChild(child, family);
 
-		OnChildAdded?.Invoke();
+		OnChildAdded?.Invoke(child.Value, family.Value);
 		return true;
 	}
 }
