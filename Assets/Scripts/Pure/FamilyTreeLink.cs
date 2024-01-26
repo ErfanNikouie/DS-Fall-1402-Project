@@ -13,7 +13,11 @@ public class FamilyTreeLink : MonoBehaviour
     {
         Vector2 mid = (father + mother) / 2f;
 
-        Vector3[] positions = new Vector3[2 * children.Length + 4]; //4 for mother and father.
+        int count = 2 * children.Length + 3;
+        if (children.Length > 0)
+            count++;
+        
+        Vector3[] positions = new Vector3[count]; //4 for mother and father.
         renderer.positionCount = positions.Length;
         
         positions[0] = father;
@@ -32,8 +36,6 @@ public class FamilyTreeLink : MonoBehaviour
             }
         }
 
-        
-        
         renderer.SetPositions(positions);
     }
 }

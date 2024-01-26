@@ -98,7 +98,6 @@ public class FamilyTreeView : MonoBehaviour
     private void LinkNodes()
     {
         FamilyPool families = controller.Families;
-        //ResetDeactiveLinks();
 
         for (int i = 0; i < families.Pool.Count; i++)
         {
