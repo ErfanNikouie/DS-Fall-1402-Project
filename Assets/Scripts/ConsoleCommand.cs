@@ -276,7 +276,7 @@ public class ConsoleCommand : MonoBehaviour
     [Command("clear-results", "Clears the current result.")]
     public void ClearResults() => ftv.ClearResultNodes();
 
-    [Command("load-mock", "Loads a predetermined mock graph.")]
+    [Command("load-mock", "Loads a pre-determined mock graph.")]
     public void LoadMock() => mock.CreateFamily(ftv.Controller);
 
     [Command("reload", "Reloads the scene.")]
