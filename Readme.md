@@ -21,11 +21,14 @@ and each integer is 4 bytes, we save half the memory for other operations. This 
 ### Model-View-Controller Architecture:
 The data is encapsulated in the model, and the link between the view (which generates the graph) and model is the controller, which also handle the logic of all the operations.
 
+### Entity-Component-System for Graph Generation:
+We iterate on each node to set the positions, and values, almost identical to a system. Each node has some components which hold data. And the nodes are the entities.
+
 ### Unity Side:
 We use object pooling for nodes of the graph, which saves GC time, since the graph needs to be recreated every time it changes.
 This approach to caching nodes and re-initializing them whenever needed, makes it so that we would not experience frame drops.
 
-> This part will be completed as soon as possible.
+### The other parts will be completed as soon as possible.
 
 ## Commands
 #### These are some usable commands in the in-game console to work with the data structure and graph:
