@@ -31,7 +31,7 @@ public class FamilyTreeControllerTests
         
 		Assert.AreEqual(0, pid.Value);
 		Assert.AreEqual(0, ft.ContainsPerson(p).Value);
-		Assert.AreEqual("SomeName", ft.LookupPerson(pid).Name);
+		Assert.AreEqual(MD5Hash.CalculateHash("SomeName"), ft.LookupPerson(pid).Name);
 	}
 	
 	[Test]
@@ -56,11 +56,11 @@ public class FamilyTreeControllerTests
         
 		Assert.AreEqual(0, p0id.Value);
 		Assert.AreEqual(0, ft.ContainsPerson(p0).Value);
-		Assert.AreEqual("SomeName0", ft.LookupPerson(p0id).Name);
+		Assert.AreEqual(MD5Hash.CalculateHash("SomeName0"), ft.LookupPerson(p0id).Name);
         
 		Assert.AreEqual(1, p1id.Value);
 		Assert.AreEqual(1, ft.ContainsPerson(p1).Value);
-		Assert.AreEqual("SomeName1", ft.LookupPerson(p1id).Name);
+		Assert.AreEqual(MD5Hash.CalculateHash("SomeName1"), ft.LookupPerson(p1id).Name);
 	}
 	
 	[Test]

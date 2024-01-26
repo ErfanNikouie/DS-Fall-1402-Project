@@ -9,6 +9,6 @@ public class PersonTests
 		Person p = new Person("SomeName");
 		
 		//Assert
-		Assert.AreEqual("SomeName", p.Name);
+		Assert.AreEqual(MD5Hash.CalculateHash("SomeName"), p.Name);
 	}
 }

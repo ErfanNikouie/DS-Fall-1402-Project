@@ -34,6 +34,8 @@ public class FamilyTreeView : MonoBehaviour
     private Dictionary<int, FamilyTreeLink> links = new Dictionary<int, FamilyTreeLink>();
 
     private List<int> deactiveNodes = new List<int>();
+    private List<int> selectedNodes = new List<int>();
+    private List<int> resultNodes = new List<int>();
     private List<int> deactiveLinks = new List<int>();
 
     private void Awake()
@@ -65,7 +67,7 @@ public class FamilyTreeView : MonoBehaviour
         links.TryAdd(id, link);
     }
 
-    private void Refresh()
+    public void Refresh()
     {
         PlaceNodes();
         LinkNodes();
@@ -121,14 +123,6 @@ public class FamilyTreeView : MonoBehaviour
         deactiveNodes.Clear();
     }
     
-    private void ResetDeactiveLinks()
-    {
-        foreach (int id in deactiveLinks)
-            links[id].gameObject.SetActive(true);
-
-        deactiveLinks.Clear();
-    }
-
     private int FindIndexInList(int id, in List<PersonID> ids)
     {
         for (int i = 0; i < ids.Count; i++)
@@ -227,5 +221,75 @@ public class FamilyTreeView : MonoBehaviour
             foreach (PersonID child in ownerOf.Children)
                 CalculateNodePosition(child.Value);
         }
+    }
+
+    public void ClearSelectedNodes()
+    {
+        int[] snodes = selectedNodes.ToArray();
+        foreach (var id in snodes)
+        {
+            if(!nodes.TryGetValue(id, out var node)) continue;
+            
+            DeselectNode(id);
+        }
+        
+        selectedNodes.Clear();
+    }
+    
+    public bool SelectNode(int id)
+    {
+        if (!nodes.TryGetValue(id, out var node) && !selectedNodes.Contains(id)) return false;
+        
+        node.SetState(selected: true);
+        selectedNodes.Add(id);
+        return true;
+    }
+
+    public bool DeselectNode(int id)
+    {
+        if (!nodes.TryGetValue(id, out var node) && selectedNodes.Contains(id)) return false;
+
+        node.SetState(selected: false);
+        selectedNodes.Remove(id);
+        return true;
+    }
+
+    public void ClearResultNodes()
+    {
+        int[] rnodes = resultNodes.ToArray();
+        foreach (var id in rnodes)
+        {
+            if(!nodes.TryGetValue(id, out var node)) continue;
+            
+            DeresultNode(id);
+        }
+        
+        resultNodes.Clear();
+    }
+    
+
+    public bool ResultNode(int id)
+    {
+        if (!nodes.TryGetValue(id, out var node) && !resultNodes.Contains(id)) return false;
+        
+        node.SetState(result: true);
+        resultNodes.Add(id);
+        return true;
+    }
+
+    public bool DeresultNode(int id)
+    {
+        if (!nodes.TryGetValue(id, out var node) && resultNodes.Contains(id)) return false;
+
+        node.SetState(result: false);
+        resultNodes.Remove(id);
+        return true;
+    }
+
+    public int GetSelection(int id)
+    {
+        if (selectedNodes.Count <= id) return -1;
+        
+        return selectedNodes[id];
     }
 }

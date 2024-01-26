@@ -22,6 +22,14 @@ public class FamilyTreeNode : MonoBehaviour
 
 		Refresh();
 	}
+
+	public void SetState(bool selected = false, bool result = false)
+	{
+		this.selected = selected;
+		this.result = result;
+
+		RefreshState();
+	}
 	
 	private void RefreshText() => text.text = value.ToString();
 

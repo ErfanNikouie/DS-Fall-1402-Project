@@ -209,7 +209,6 @@ public class FamilyTreeController
 			onTraced?.Invoke(child, ref second, ref distance);
 		}
 	}
-
     
     #endregion
     

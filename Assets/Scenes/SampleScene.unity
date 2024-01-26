@@ -396,8 +396,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 939466003}
+  - component: {fileID: 939466004}
   m_Layer: 0
-  m_Name: ConsoleCommands
+  m_Name: ConsoleCommand
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -418,6 +419,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &939466004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 939466002}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 822fae4716c3e4c4ba48452764a02fa4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ftv: {fileID: 1081289983}
+  mock: {fileID: 47167113}
+  success: {r: 0.3019758, g: 0.735849, b: 0.3019758, a: 1}
+  warning: {r: 1, g: 0.5631649, b: 0.015686274, a: 1}
+  error: {r: 1, g: 0.033018887, b: 0.29797834, a: 1}
 --- !u!1 &1081289982
 GameObject:
   m_ObjectHideFlags: 0
@@ -450,7 +468,7 @@ MonoBehaviour:
   nodePrefab: {fileID: 3344289670920045969, guid: 4e12c5984b2d60d4799169ed20987f13, type: 3}
   nodeParams:
     childDistance: {x: 6, y: 2}
-    spouseDistance: {x: 2, y: 0}
+    spouseDistance: {x: 1.5, y: 0}
     spouseDirection: 1
     childDirection: -1
   linkPrefab: {fileID: 2199102815696241001, guid: fc7fd925910ad4f4c8db9386a8729805, type: 3}
